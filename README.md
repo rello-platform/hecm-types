@@ -7,7 +7,7 @@ A single source of truth for the highest-stakes math surface on the platform —
 ## Install
 
 ```bash
-npm install "github:rello-platform/hecm-types#v0.1.0"
+npm install "github:rello-platform/hecm-types#v0.2.0"
 ```
 
 For Railway nixpacks: the repo is **public** and `dist/` is committed, so unauthenticated tag-pinned `npm install` works without an ssh client. No `prepare`/`postinstall` lifecycle script.
@@ -44,6 +44,8 @@ Milo's compute now **always** returns the full v2 envelope (a v1-only caller rec
 | `HecmDistributionType` | Payment-plan union (`LUMP_SUM` … `MODIFIED`) |
 | `HecmSheetPremiumBand` | One PLU band forwarded from the PFP reverse rate-sheet |
 | `HecmDistribution` `HecmCosts` `HecmFirstYear` `HecmLesa` `HecmProjection` `HecmDerivedCoverage` `HecmHomesafeRouting` | The v2 output blocks |
+| `HecmContentPublic` | Published HECM education-content row served by Rello's `GET /api/hecm/content` (v0.2.0) |
+| `HecmContentType` | Content-category union — TS mirror of Rello's `HecmContentType` Prisma enum (v0.2.0) |
 
 ## Usage
 
@@ -57,6 +59,12 @@ import type {
 ```
 
 Every figure these types carry is **illustrative** — never a quote, pre-qualification, or offer (SPEC §4.4 / Platform Rule L8).
+
+## HECM education content (v0.2.0)
+
+`HecmContentPublic` / `HecmContentType` are a **separate surface** from the compute contract: the read shape of the HECM education content authored + published in **Rello** Platform Admin (the `HecmContent` model / `HecmContentType` enum) and served by `GET /api/hecm/content`. **Rello owns** authoring (its definition is canonical, codified here); **PFP consumes** it — the HECM-advisor workspace pulls the ACTIVE set dynamically and renders it. Before v0.2.0, PFP re-declared this shape locally — a Rule-E silent-drift risk this fold retires.
+
+`contentType` stays `string` on `HecmContentPublic` (a new admin-authored category never breaks the read path); use the `HecmContentType` union when narrowing the known categories.
 
 ## Migration note
 

@@ -18,6 +18,10 @@
  * platform. Importing this package makes a HECM contract change a **compile
  * error** in every consumer instead of a silent divergence (CLAUDE.md Rule E).
  *
+ * As of v0.2.0 this package also codifies the HECM education-content read shape
+ * (`HecmContentPublic` / `HecmContentType`) — a separate Rello-owned surface
+ * (Platform Admin authors it; PFP consumes it). See that section below.
+ *
  * Pure types only — no runtime emit. Every export is `type`/`interface`, so the
  * package erases at every consumer's compile (no `require()` at runtime → no
  * CJS/ESM boundary hazard; Milo's CommonJS build never resolves it).
@@ -306,3 +310,53 @@ export interface HecmRecommendResponse {
   data: HecmRecommendation | null;
   error?: string;
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// HECM education content (v0.2.0 — additive)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Published HECM education-content row, served by Rello's read API
+ * (`GET /api/hecm/content`, ApiKey-authed). This is a SEPARATE surface from the
+ * compute contract above:
+ *
+ *   - **Rello (Platform Admin) owns** authoring + publishing this content
+ *     (APP-OWNERSHIP-MATRIX — HECM education content). The Prisma `HecmContent`
+ *     model + `HecmContentType` enum live in Rello; the read route serializes
+ *     this shape. Rello's definition is canonical and this package codifies it.
+ *   - **PFP consumes** it — the HECM-advisor workspace pulls the ACTIVE set
+ *     dynamically (content is data, not code: edited in admin, reflected in PFP
+ *     with no redeploy) and renders it.
+ *
+ * Only ACTIVE rows are ever served. Importing this type makes a content-shape
+ * change a compile error in PFP instead of a silent re-declared-mirror drift
+ * (CLAUDE.md Rule E) — the same drift class the compute types above retired.
+ *
+ * `contentType` is the serialized string value (kept as `string`, not the
+ * `HecmContentType` union, so a new admin-authored category never breaks the
+ * read path); use `HecmContentType` when narrowing the known categories.
+ */
+export interface HecmContentPublic {
+  id: string;
+  slug: string;
+  contentType: string;
+  category: string | null;
+  fieldKey: string | null;
+  title: string;
+  body: string;
+  sortOrder: number;
+}
+
+/**
+ * The known `contentType` categories authored in Platform Admin — the TypeScript
+ * mirror of Rello's `HecmContentType` Prisma enum:
+ *   - FIELD_COACH_NOTE — per-intake-field coaching note (`fieldKey` set)
+ *   - HECM_101_CARD    — how-it-works / key-terms education card
+ *   - OBJECTION        — objection + handling answer (answer in `body`)
+ *   - COMPLIANCE_NOTE  — say / don't-say compliance guidance
+ */
+export type HecmContentType =
+  | 'FIELD_COACH_NOTE'
+  | 'HECM_101_CARD'
+  | 'OBJECTION'
+  | 'COMPLIANCE_NOTE';
