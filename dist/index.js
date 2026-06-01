@@ -19,6 +19,10 @@
  * platform. Importing this package makes a HECM contract change a **compile
  * error** in every consumer instead of a silent divergence (CLAUDE.md Rule E).
  *
+ * As of v0.2.0 this package also codifies the HECM education-content read shape
+ * (`HecmContentPublic` / `HecmContentType`) — a separate Rello-owned surface
+ * (Platform Admin authors it; PFP consumes it). See that section below.
+ *
  * Pure types only — no runtime emit. Every export is `type`/`interface`, so the
  * package erases at every consumer's compile (no `require()` at runtime → no
  * CJS/ESM boundary hazard; Milo's CommonJS build never resolves it).
