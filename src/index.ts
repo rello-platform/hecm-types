@@ -244,6 +244,36 @@ export interface HecmHomesafeRouting {
   reason: 'above_mca' | null;
 }
 
+/**
+ * Fixed-rate HECM product eligibility routing (additive — mirrors the
+ * `HecmHomesafeRouting` pure-routing-flag pattern; no compute beyond the gate).
+ *
+ * Fixed-rate HECMs require the full principal limit to be drawn at closing as a
+ * single lump sum — the HUD ML 2014-11 year-1 disbursement cap (60% of the
+ * principal limit, or the mandatory-obligations floor) means a borrower whose
+ * modeled draw (PL utilization) is below 60% cannot satisfy the fixed-rate
+ * single-draw requirement and should be routed to an adjustable-rate HECM.
+ *
+ * The gate keys on `HecmInput.targetPlu` (the borrower's modeled draw % of the
+ * principal limit, 0..100):
+ *   - `targetPlu` supplied AND ≥ 60 → `available: true`  (`reason: 'pl_utilization_at_or_above_60'`)
+ *   - `targetPlu` supplied AND  < 60 → `available: false` (`reason: 'pl_utilization_below_60'`)
+ *   - `targetPlu` ABSENT             → `available: null`   (`reason: 'unknown'`)
+ *
+ * `available: null` means "not determinable" — the engine never guesses a draw
+ * figure when none is supplied (Kelly ruling 2026-06-01). A consumer treats
+ * `null` and `true` identically (no UI change); only `false` disables the
+ * fixed-rate lever. This block is illustrative by inheritance from
+ * `illustrative: true` on the envelope — it is NOT a product approval or offer.
+ */
+export interface HecmFixedRouting {
+  available: boolean | null;
+  reason:
+    | 'pl_utilization_at_or_above_60'
+    | 'pl_utilization_below_60'
+    | 'unknown';
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Recommendation envelope
 // ─────────────────────────────────────────────────────────────────────────────
@@ -297,6 +327,12 @@ export interface HecmRecommendation extends HecmRecommendationCore {
    *  absent or expectedRate-only path). */
   derivedCoverage: HecmDerivedCoverage | null;
   homesafeRouting: HecmHomesafeRouting;
+  /** Fixed-rate HECM eligibility routing (v0.3.0 additive — Kelly ruling
+   *  2026-06-01). OPTIONAL so consumers compiled against ≤v0.2.0 (which never
+   *  read it) stay byte-identical; Milo's `computeHecmRecommendation` always
+   *  populates it. Absent/`undefined` ⇒ treat as `available: null` (no change to
+   *  current behavior). See `HecmFixedRouting`. */
+  hecmFixedRouting?: HecmFixedRouting;
 }
 
 /**

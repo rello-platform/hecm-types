@@ -1,6 +1,6 @@
 {
   "name": "@rello-platform/hecm-types",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Canonical HECM (reverse-mortgage) compute contract — the input Milo's deterministic engine consumes and the recommendation it returns — plus the Rello-owned HECM education-content read shape. Shared by Milo, Rello, and PathfinderPro.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
