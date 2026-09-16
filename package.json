@@ -13,7 +13,8 @@
   "scripts": {
     "compile": "tsc",
     "clean": "rm -rf dist",
-    "prepublishOnly": "npm run compile"
+    "prepublishOnly": "npm run compile",
+    "hooks": "git config core.hooksPath .husky || true"
   },
   "repository": {
     "type": "git",
